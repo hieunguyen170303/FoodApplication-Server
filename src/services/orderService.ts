@@ -101,6 +101,14 @@ export class OrderService {
     // Save into memory store
     liveActiveOrder = newOrder;
 
+    // Push newly created customer order to top of Shipper available feed!
+    try {
+      const { ShipperService } = require("./shipperService");
+      ShipperService.addNewCustomerOrder(newOrder);
+    } catch (err) {
+      console.warn("Error pushing order to Shipper feed:", err);
+    }
+
     // Try saving to Supabase orders table asynchronously
     try {
       await supabaseAdmin.from("orders").insert({
