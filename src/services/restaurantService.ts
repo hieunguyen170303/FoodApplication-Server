@@ -15,7 +15,7 @@ const MOCK_RESTAURANTS = [
     logo: "burgerOne",
     rating: 4.8,
     reviewCount: "500+",
-    category: "BURGERS",
+    category: "Burgers",
     priceRange: "30k - 100k",
     originalDeliveryFee: "25.000đ",
     deliveryFee: "15.000đ",
@@ -27,12 +27,12 @@ const MOCK_RESTAURANTS = [
   },
   {
     id: "r2",
-    name: "Jollibee",
+    name: "Jollibee - Coopmart Bình Dương",
     branch: "EC Nguyễn Du - Thủ Dầu Một",
     logo: "logo",
     rating: 4.4,
     reviewCount: "1K+",
-    category: "BURGERS",
+    category: "Burgers",
     priceRange: "30.000đ - 42.000đ",
     originalDeliveryFee: "42.000đ",
     deliveryFee: "30.000đ",
@@ -49,12 +49,69 @@ const MOCK_RESTAURANTS = [
     logo: "burgerTwo",
     rating: 4.6,
     reviewCount: "800+",
-    category: "BURGERS",
+    category: "Pizza",
     priceRange: "40k - 150k",
     deliveryFee: "17.000đ",
     deliveryTime: "25 phút",
     tag: "Giao hàng nhanh",
     voucherBadge: "Freeship",
+  },
+];
+
+const MOCK_SEARCH_FOODS = [
+  {
+    id: "g1",
+    restaurantId: "r1",
+    name: "Wendy's Burger",
+    price: 10.4,
+    startingPriceText: "From $10.4",
+    category: "Burgers",
+    image: "burgerOne",
+  },
+  {
+    id: "g2",
+    restaurantId: "r2",
+    name: "Veggie Burger",
+    price: 10.4,
+    startingPriceText: "From $10.4",
+    category: "Burgers",
+    image: "burgerTwo",
+  },
+  {
+    id: "g3",
+    restaurantId: "r3",
+    name: "Margherita Magic",
+    price: 10.4,
+    startingPriceText: "From $10.4",
+    category: "Pizza",
+    image: "pizzaOne",
+  },
+  {
+    id: "g4",
+    restaurantId: "r3",
+    name: "Veggie Delight",
+    price: 10.4,
+    startingPriceText: "From $10.4",
+    category: "Pizza",
+    image: "pizzaOne",
+  },
+  {
+    id: "g5",
+    restaurantId: "r1",
+    name: "Chicken Wrap",
+    price: 10.4,
+    startingPriceText: "From $10.4",
+    category: "Burrito",
+    image: "burrito",
+  },
+  {
+    id: "g6",
+    restaurantId: "r2",
+    name: "Big Beef Burrito",
+    price: 10.4,
+    startingPriceText: "From $10.4",
+    category: "Burrito",
+    image: "burrito",
   },
 ];
 
@@ -192,5 +249,30 @@ export class RestaurantService {
     }
 
     return MOCK_JOLLIBEE_DETAIL;
+  }
+
+  static async searchFoodsAndStores(searchKey?: string, category?: string) {
+    let foods = MOCK_SEARCH_FOODS;
+    let restaurants = MOCK_RESTAURANTS;
+
+    const cat = category?.trim();
+    if (cat && cat !== "All" && cat !== "Tất cả") {
+      foods = foods.filter((f) => f.category.toLowerCase() === cat.toLowerCase());
+      restaurants = restaurants.filter(
+        (r) =>
+          r.category.toLowerCase().includes(cat.toLowerCase()) ||
+          r.name.toLowerCase().includes(cat.toLowerCase())
+      );
+    }
+
+    const q = searchKey?.trim().toLowerCase();
+    if (q) {
+      foods = foods.filter((f) => f.name.toLowerCase().includes(q) || f.category.toLowerCase().includes(q));
+      restaurants = restaurants.filter(
+        (r) => r.name.toLowerCase().includes(q) || r.category.toLowerCase().includes(q)
+      );
+    }
+
+    return { foods, restaurants };
   }
 }

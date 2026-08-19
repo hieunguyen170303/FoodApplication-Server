@@ -28,10 +28,10 @@ class SocketService {
                 console.log(`💬 WebSocket Chat message broadcast in ${room}:`, data.message);
                 this.io?.to(room).emit("chat:new_message", data.message);
             });
-            // Handle real-time order status update
+            // Handle real-time order status update — emit only to specific room
             socket.on("order:update_status", (data) => {
                 const room = this.getRoomName(data.orderId);
-                console.log(`🛵 WebSocket Order Status Update broadcast in ${room}:`, data);
+                console.log(`\ud83d\uded5 WebSocket Order Status Update broadcast in ${room}:`, data);
                 this.io?.to(room).emit("order:status_changed", data);
             });
             socket.on("disconnect", () => {
@@ -51,13 +51,16 @@ class SocketService {
     broadcastOrderStatus(orderId, status, stepIndex, statusText) {
         if (this.io) {
             const room = this.getRoomName(orderId);
-            this.io.to(room).emit("order:status_changed", {
+            const payload = {
                 orderId,
                 status,
                 stepIndex,
                 statusText,
                 updatedAt: new Date().toISOString(),
-            });
+            };
+            // Always emit to the specific room
+            this.io.to(room).emit("order:status_changed", payload);
+            console.log(`\ud83d\uded5 WebSocket Order Status Update broadcast in ${room}:`, { orderId, status, stepIndex, statusText });
         }
     }
     // Helper method to broadcast new chat message from REST Controllers

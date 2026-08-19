@@ -2,32 +2,9 @@ import { supabaseAdmin } from "../config/supabase";
 import { CreateOrderDTO } from "../types/order";
 
 // In-memory fallback live order store for fast response
-let liveActiveOrder: any = {
-  id: "ORD-9821",
-  storeName: "Jollibee - EC Nguyễn Du",
-  storeLogo: "logo",
-  status: "DELIVERING",
-  statusText: "Tài xế đang giao hàng đến bạn",
-  estimatedTime: "15 - 20 phút (14:35)",
-  currentStepIndex: 2,
-  orderDate: "Hôm nay, 14:15",
-  items: [
-    {
-      id: "i1",
-      name: "1 Miếng Gà Giòn Vui Vẻ + 1 Mỳ Ý Jolly vừa + 1 Khoai tây chiên + 1 Pepsi",
-      quantity: 1,
-      price: 78000,
-    },
-  ],
-  totalPrice: 108000,
-  driverInfo: {
-    name: "Nguyễn Văn Hùng",
-    phone: "0901234567",
-    rating: 4.9,
-    vehicleNumber: "61B1 - 888.99",
-    avatar: "avatar",
-  },
-};
+// Starts as null — only populated after a real customer order is placed
+let liveActiveOrder: any = null;
+
 
 const MOCK_ORDER_HISTORY = [
   {
@@ -133,5 +110,31 @@ export class OrderService {
 
   static async getOrderHistory() {
     return MOCK_ORDER_HISTORY;
+  }
+
+  static updateLiveOrderStatus(orderId: string, status: string, stepIndex: number, statusText: string) {
+    if (liveActiveOrder) {
+      console.log(`[OrderService] Updating live order ${liveActiveOrder.id} → status=${status}, step=${stepIndex}`);
+      liveActiveOrder.status = status;
+      liveActiveOrder.currentStepIndex = stepIndex;
+      liveActiveOrder.statusText = statusText;
+    } else {
+      console.warn(`[OrderService] updateLiveOrderStatus called but liveActiveOrder is null. orderId param: ${orderId}`);
+    }
+  }
+
+  static completeLiveOrder(orderId: string) {
+    if (liveActiveOrder) {
+      const finished = {
+        ...liveActiveOrder,
+        status: "COMPLETED",
+        statusText: "Đơn hàng đã hoàn thành",
+        currentStepIndex: 3,
+      };
+      if (!MOCK_ORDER_HISTORY.some((o: any) => o.id === finished.id)) {
+        MOCK_ORDER_HISTORY.unshift(finished);
+      }
+      liveActiveOrder = null;
+    }
   }
 }

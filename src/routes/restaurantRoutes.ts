@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { RestaurantController } from "../controllers/restaurantController";
+import { SearchController } from "../controllers/searchController";
 
 const router = Router();
 
@@ -14,6 +15,27 @@ const router = Router();
  *         description: List of food categories
  */
 router.get("/categories", RestaurantController.getCategories);
+
+/**
+ * @openapi
+ * /api/search:
+ *   get:
+ *     summary: Search foods and restaurants by keyword and category
+ *     tags: [Restaurants & Food]
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Filtered list of foods and restaurants
+ */
+router.get("/search", SearchController.search);
 
 /**
  * @openapi

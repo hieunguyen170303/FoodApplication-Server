@@ -39,6 +39,14 @@ export class ReviewService {
     mockOrderReviews[dto.orderId] = reviewData;
     console.log("⭐ Order Review Created for Order:", dto.orderId, reviewData);
 
+    // Complete order in OrderService memory store so backend GET /api/orders/active clears it
+    try {
+      const { OrderService } = require("./orderService");
+      OrderService.completeLiveOrder(dto.orderId);
+    } catch (e) {
+      console.warn("Could not complete live order in OrderService:", e);
+    }
+
     // Try persisting to Supabase order_reviews table
     try {
       await supabaseAdmin.from("order_reviews").insert(reviewData);

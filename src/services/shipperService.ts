@@ -144,6 +144,12 @@ export class ShipperService {
       // Broadcast WebSocket notification to Customer in real-time
       socketService.broadcastOrderStatus(orderId, "ACCEPTED", 1, accepted.statusText);
 
+      // Sync OrderService
+      try {
+        const { OrderService } = require("./orderService");
+        OrderService.updateLiveOrderStatus(orderId, "ACCEPTED", 1, accepted.statusText);
+      } catch (e) { }
+
       return accepted;
     }
 
@@ -154,10 +160,12 @@ export class ShipperService {
    * Update order status
    */
   static async updateOrderStatus(orderId: string, status: string) {
-    if (!mockActiveOrder || mockActiveOrder.id !== orderId) {
+    if (!mockActiveOrder) {
       throw new Error("Không tìm thấy đơn hàng đang giao!");
     }
 
+    // Snapshot BEFORE resetting so we always have a valid return value
+    const snapshot = { ...mockActiveOrder };
     mockActiveOrder.status = status;
     let stepIndex = 1;
     let statusText = "";
@@ -175,14 +183,23 @@ export class ShipperService {
     }
 
     mockActiveOrder.statusText = statusText;
+    snapshot.statusText = statusText;
+    snapshot.status = status;
 
     // Broadcast WebSocket update to Customer in real-time!
     socketService.broadcastOrderStatus(orderId, status, stepIndex, statusText);
 
+    // Synchronize backend OrderService status so Customer REST API returns COMPLETED!
+    try {
+      const { OrderService } = require("./orderService");
+      OrderService.updateLiveOrderStatus(orderId, status, stepIndex, statusText);
+    } catch (e) {
+      console.warn("Could not update OrderService status:", e);
+    }
+
     if (status === "COMPLETED") {
-      const finished = mockActiveOrder;
       mockActiveOrder = null; // Reset active order to NULL so Shipper can pick up next order!
-      return finished;
+      return snapshot; // Return snapshot (not null!) so frontend can use shippingEarnings etc.
     }
 
     return mockActiveOrder;
