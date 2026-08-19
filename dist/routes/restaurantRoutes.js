@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const restaurantController_1 = require("../controllers/restaurantController");
+const searchController_1 = require("../controllers/searchController");
 const router = (0, express_1.Router)();
 /**
  * @openapi
@@ -14,6 +15,26 @@ const router = (0, express_1.Router)();
  *         description: List of food categories
  */
 router.get("/categories", restaurantController_1.RestaurantController.getCategories);
+/**
+ * @openapi
+ * /api/search:
+ *   get:
+ *     summary: Search foods and restaurants by keyword and category
+ *     tags: [Restaurants & Food]
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Filtered list of foods and restaurants
+ */
+router.get("/search", searchController_1.SearchController.search);
 /**
  * @openapi
  * /api/restaurants:
